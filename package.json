@@ -1,0 +1,29 @@
+{
+  "name": "traffic-data",
+  "version": "1.0.0",
+  "main": "dist/app.js",
+  "scripts": {
+    "build": "rimraf ./dist && npx tsc --outDir dist",
+    "start": "node .",
+    "dev": "nodemon ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/olillin/traffic-data.git"
+  },
+  "author": "Oli",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/olillin/traffic-data/issues"
+  },
+  "homepage": "https://github.com/olillin/traffic-data#readme",
+  "dependencies": {
+    "@badgateway/oauth2-client": "^2.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4",
+    "rimraf": "^5.0.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.3"
+  }
+}
