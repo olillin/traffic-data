@@ -31,23 +31,29 @@ function main(): Promise<number> {
         var positionCount = 0
         var currentZoneId = 0
         while (process.uptime() < lifetimeMinutes * 60) {
-            const data = await getPositions(currentZoneId)
-            var count = 0
-            data.forEach(line => {
-                out.write('\n')
-                out.write(line.map(value => value.toString().replace(/,/g, '","')).join(','))
-                count++
-            })
+            await getPositions(currentZoneId)
+                .then(async data => {
+                    var count = 0
+                    data.forEach(line => {
+                        out.write('\n')
+                        out.write(line.map(value => value.toString().replace(/,/g, '","')).join(','))
+                        count++
+                    })
 
-            console.log(`Gathered ${count} positions from zone ${currentZoneId}, current time: ${formatSeconds(process.uptime())}`)
-            positionCount += count
+                    console.log(`Gathered ${count} positions from zone ${currentZoneId}, current time: ${formatSeconds(process.uptime())}`)
+                    positionCount += count
 
-            // Next zone
+                    // Next zone
+                    currentZoneId++
+                    if (currentZoneId >= zones.length) {
+                        currentZoneId = 0
+                    }
+                })
+                .catch(reason => {
+                    console.warn(reason)
+                })
+
             await sleep(frequencySeconds * 1000)
-            currentZoneId++
-            if (currentZoneId >= zones.length) {
-                currentZoneId = 0
-            }
         }
         resolve(positionCount)
     })
@@ -55,10 +61,20 @@ function main(): Promise<number> {
 
 function getPositions(zoneId: number): Promise<Position[]> {
     const zone = zones[zoneId]
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
         const url = `https://ext-api.vasttrafik.se/pr/v4/positions?lowerLeftLat=${zone[0]}&lowerLeftLong=${zone[1]}&upperRightLat=${zone[2]}&upperRightLong=${zone[3]}&limit=200`
         authorizedFetch(url)
-            .then(response => response.json())
+            .then(async response => {
+                if (response.status === 200) {
+                    return response.json()
+                } else {
+                    let message = `Failed to get positions, code ${response.status}`
+                    if (response.bodyUsed) {
+                        message += `\nResponse body: ${await response.text()}`
+                    }
+                    return Promise.reject(message)
+                }
+            })
             .then(json => {
                 const now = currentUnixTimestamp()
                 const positions: Position[] = (json as PositionsResponseEntry[]).map(entry => {
@@ -78,6 +94,7 @@ function getPositions(zoneId: number): Promise<Position[]> {
                 })
                 resolve(positions)
             })
+            .catch(reason => reject(reason))
     })
 }
 
