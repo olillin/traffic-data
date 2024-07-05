@@ -9,9 +9,9 @@ import { Position, PositionsResponseEntry } from './types'
 /** Path for the file to output to */
 const outputFilePath: string = process.env.OUT_PATH ?? './data.csv'
 /** How many minutes the app should collect data for */
-const lifetimeMinutes: number = process.env.LIFETIME_MINUTES ? parseInt(process.env.LIFETIME_MINUTES) : 24 * 60
+const lifetimeMinutes: number = process.env.LIFETIME_MINUTES ? parseFloat(process.env.LIFETIME_MINUTES) : 24 * 60
 /** How many seconds the app should wait between polling the next zone */
-const frequencySeconds: number = process.env.FREQUENCY_SECONDS ? parseInt(process.env.FREQUENCY_SECONDS) : 5
+const frequencySeconds: number = process.env.FREQUENCY_SECONDS ? parseFloat(process.env.FREQUENCY_SECONDS) : 5
 
 // Create output file
 if (fs.existsSync(outputFilePath)) {
